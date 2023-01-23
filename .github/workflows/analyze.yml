@@ -47,7 +47,10 @@ jobs:
           BOOST_ROOT: ${{env.BOOST_DIR}}
         run: |
           mkdir build && cd build
-          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug
+          cmake .. -GNinja \
+                   -DCMAKE_BUILD_TYPE=Debug \
+                   -DCMAKE_CXX_STANDARD=20 \
+                   -DBOOST_HANA_ENABLE_STRING_UDL=ON
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ninja -C build tests examples
