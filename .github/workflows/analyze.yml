@@ -1,0 +1,59 @@
+name: SonarCloud
+
+on:
+  push:
+    branches:
+      - master
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+env:
+  BOOST_VERSION: '1.76.0'
+  BOOST_DIR: deps/boost-1.76.0
+  BOOST_URL: 'http://github.com/boostorg/boost.git'
+
+jobs:
+  build:
+    name: Build and analyze
+    runs-on: ubuntu-latest
+    env:
+      BUILD_WRAPPER_OUT_DIR: build_wrapper_output_directory # Directory where build-wrapper output will be placed
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+      - name: Install sonar-scanner and build-wrapper
+        uses: SonarSource/sonarcloud-github-c-cpp@v1
+      - name: Install system dependencies
+        run: |
+          sudo apt update
+          sudo apt install ninja-build
+
+      - name: Install Boost headers
+        run: |
+          mkdir deps
+          git clone --depth 1 --recursive ${{env.BOOST_URL}} ${{env.BOOST_DIR}}
+          cd ${{env.BOOST_DIR}}
+          ./bootstrap.sh
+          ./b2 headers
+
+          # Make sure we don't conflict with the Hana shipped with Boost
+          rm -r ${{env.BOOST_DIR}}/boost/{hana,hana.hpp}
+
+      - name: Generate build files
+        env:
+          UNIT_TESTS: true
+          ENABLE_MEMCHECK: true
+          BOOST_ROOT: ${{env.BOOST_DIR}}
+        run: |
+          mkdir build && cd build
+          cmake .. -GNinja -DCMAKE_BUILD_TYPE=Debug
+      - name: Run build-wrapper
+        run: |
+          build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ninja -C build
+      - name: Run sonar-scanner
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+        run: |
+          sonar-scanner --define sonar.cfamily.build-wrapper-output="${{ env.BUILD_WRAPPER_OUT_DIR }}"
