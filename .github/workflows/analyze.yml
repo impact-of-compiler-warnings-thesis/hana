@@ -8,8 +8,8 @@ on:
     types: [opened, synchronize, reopened]
 
 env:
-  BOOST_VERSION: '1.76.0'
-  BOOST_DIR: deps/boost-1.76.0
+  BOOST_VERSION: 'trunk'
+  BOOST_DIR: deps/boost
   BOOST_URL: 'http://github.com/boostorg/boost.git'
 
 jobs:
@@ -38,7 +38,7 @@ jobs:
           ./b2 headers
 
           # Make sure we don't conflict with the Hana shipped with Boost
-          rm -r ${{env.BOOST_DIR}}/boost/{hana,hana.hpp}
+          rm -rf ${{env.BOOST_DIR}}/boost/libs/hana
 
       - name: Generate build files
         env:
