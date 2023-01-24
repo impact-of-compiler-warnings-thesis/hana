@@ -55,7 +55,7 @@ jobs:
           cmake .. -GNinja \
                    -DCMAKE_BUILD_TYPE=Debug \
                    -DCMAKE_CXX_STANDARD=20 \
-                   -DBOOST_HANA_ENABLE_STRING_UDL=ON
+                   -DBOOST_HANA_ENABLE_STRING_UDL=OFF
       - name: Run build-wrapper
         run: |
           build-wrapper-linux-x86-64 --out-dir ${{ env.BUILD_WRAPPER_OUT_DIR }} ninja -C build tests examples
