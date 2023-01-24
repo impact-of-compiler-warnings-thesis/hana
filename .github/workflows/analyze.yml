@@ -30,6 +30,9 @@ jobs:
           sudo apt install ninja-build
 
       - name: Install Boost headers
+        env:
+          CXX: /usr/bin/g++-9
+          CC: /usr/bin/gcc-9
         run: |
           mkdir deps
           git clone --depth 1 --recursive ${{env.BOOST_URL}} ${{env.BOOST_DIR}}
@@ -42,6 +45,8 @@ jobs:
 
       - name: Generate build files
         env:
+          CXX: /usr/bin/g++-9
+          CC: /usr/bin/gcc-9
           UNIT_TESTS: true
           ENABLE_MEMCHECK: true
           BOOST_ROOT: ${{env.BOOST_DIR}}
